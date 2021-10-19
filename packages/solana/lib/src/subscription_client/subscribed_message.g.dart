@@ -1,13 +1,13 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'balance.dart';
+part of 'subscribed_message.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
 // **************************************************************************
 
-BalanceResponse _$BalanceResponseFromJson(Map<String, dynamic> json) =>
-    BalanceResponse(
-      ValueResponse.fromJson(
-          json['result'] as Map<String, dynamic>, (value) => value as int),
+SubscribedMessage _$SubscribedMessageFromJson(Map<String, dynamic> json) =>
+    SubscribedMessage(
+      result: json['result'] as int,
+      id: json['id'] as int,
     );
