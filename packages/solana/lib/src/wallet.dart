@@ -119,6 +119,7 @@ class Wallet {
   /// [see this document]: https://docs.solana.com/developing/clients/jsonrpc-api#configuring-state-commitment
   Future<TransactionSignature>? transferSplToken({
     required String mint,
+    required String source,
     required String destination,
     required int amount,
     Commitment commitment = Commitment.finalized,
@@ -126,7 +127,7 @@ class Wallet {
     final token = await SplToken.readonly(mint: mint, rpcClient: _rpcClient);
 
     return token.transfer(
-      source: address,
+      source: source,
       amount: amount,
       destination: destination,
       owner: signer,
@@ -136,13 +137,14 @@ class Wallet {
 
   Future<TransactionSignature>? createAssociatedAccountAndTransfer({
     required String mint,
+    required String source,
     required String destination,
     required int amount,
     Commitment commitment = Commitment.finalized,
   }) async {
     final token = await SplToken.readonly(mint: mint, rpcClient: _rpcClient);
     return token.createAssociatedAccountAndTransfer(
-      source: address,
+      source: source,
       destination: destination,
       amount: amount,
       payer: signer,

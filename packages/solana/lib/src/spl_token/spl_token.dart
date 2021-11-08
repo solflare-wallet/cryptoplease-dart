@@ -87,15 +87,15 @@ class SplToken {
     final Account? accountDestination = await _rpcClient.getAccountInfo(destination);
     final Message message;
     if (accountDestination?.owner == SystemProgram.programId) {
-      final associatedSenderAccount = await getAssociatedAccount(source);
+      final destinationSenderAccount = await getAssociatedAccount(destination);
       // Throw an appropriate exception if the sender has no associated
       // token account
-      if (associatedSenderAccount == null) {
-        throw NoAssociatedTokenAccountException(source, mint);
+      if (destinationSenderAccount == null) {
+        throw NoAssociatedTokenAccountException(destination, mint);
       }
       message = TokenProgram.transfer(
-        source: associatedSenderAccount.address,
-        destination: source,
+        source: source,
+        destination: destinationSenderAccount.address,
         owner: owner.address,
         amount: amount,
       );
