@@ -84,7 +84,12 @@ class SplToken {
     required Ed25519HDKeyPair owner,
     Commitment commitment = TxStatus.finalized,
   }) async {
-    final Account? accountDestination = await _rpcClient.getAccountInfo(destination);
+    Account? accountDestination;
+    try {
+      accountDestination =  await _rpcClient.getAccountInfo(destination);
+    } catch (e) {
+      print(e);
+    }
     final Message message;
     if (accountDestination?.owner == SystemProgram.programId) {
       final destinationSenderAccount = await getAssociatedAccount(destination);
