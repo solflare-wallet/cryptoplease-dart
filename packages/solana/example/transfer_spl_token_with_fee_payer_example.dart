@@ -29,6 +29,7 @@ Future<void> example() async {
 
   // Finally transfer the tokens to the recipient
   await source.transferSplToken(
+    source: source.address,
     mint: _tokenMint,
     destination: destination.address,
     amount: 1,

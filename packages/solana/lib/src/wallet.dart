@@ -161,13 +161,13 @@ class Wallet {
   /// [see this document]: https://docs.solana.com/developing/clients/jsonrpc-api#configuring-state-commitment
   Future<TransactionSignature>? transferSplTokenWithMemo({
     required String mint,
+    required String source,
     required String destination,
     required int amount,
     required String memo,
     Commitment commitment = Commitment.finalized,
   }) async {
     final token = await SplToken.readonly(mint: mint, rpcClient: _rpcClient);
-    final source = await token.computeAssociatedAddress(owner: address);
 
     final message = Message(
       instructions: [
