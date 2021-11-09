@@ -84,14 +84,12 @@ class SplToken {
     required Ed25519HDKeyPair owner,
     Commitment commitment = TxStatus.finalized,
   }) async {
+    Message message;
     Account? accountDestination;
     try {
       accountDestination =  await _rpcClient.getAccountInfo(destination);
+    // ignore: avoid_catches_without_on_clauses
     } catch (e) {
-      print(e);
-    }
-    final Message message;
-    if (accountDestination?.owner == SystemProgram.programId) {
       final destinationSenderAccount = await getAssociatedAccount(destination);
       // Throw an appropriate exception if the sender has no associated
       // token account
@@ -104,7 +102,9 @@ class SplToken {
         owner: owner.address,
         amount: amount,
       );
-    } else if (accountDestination?.owner == TokenProgram.programId) {
+    }
+    
+    if (accountDestination?.owner == TokenProgram.programId) {
       message = TokenProgram.transfer(
         source: source,
         destination: destination,
