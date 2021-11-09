@@ -77,6 +77,7 @@ class SplToken {
   }
 
   /// Transfer [amount] tokens owned by [owner] from [source] to [destination]
+  /// Transfer [amount] tokens owned by [owner] from [source] to [destination]
   Future<TransactionSignature> transfer({
     required String source,
     required String destination,
@@ -87,9 +88,12 @@ class SplToken {
     Message message;
     Account? accountDestination;
     try {
-      accountDestination =  await _rpcClient.getAccountInfo(destination);
-    // ignore: avoid_catches_without_on_clauses
+      accountDestination = await _rpcClient.getAccountInfo(destination);
     } catch (e) {
+      print("no info");
+    }
+
+    if (accountDestination == null) {
       final destinationSenderAccount = await getAssociatedAccount(destination);
       // Throw an appropriate exception if the sender has no associated
       // token account
@@ -102,9 +106,7 @@ class SplToken {
         owner: owner.address,
         amount: amount,
       );
-    }
-    
-    if (accountDestination?.owner == TokenProgram.programId) {
+    } else if (accountDestination.owner == TokenProgram.programId) {
       message = TokenProgram.transfer(
         source: source,
         destination: destination,
