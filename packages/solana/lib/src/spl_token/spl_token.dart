@@ -3,6 +3,7 @@ import 'package:solana/src/associated_token_account_program/associated_token_acc
 import 'package:solana/src/crypto/ed25519_hd_keypair.dart';
 import 'package:solana/src/encoder/buffer.dart';
 import 'package:solana/src/exceptions/no_associated_token_account_exception.dart';
+import 'package:solana/src/exceptions/not_token_exception.dart';
 import 'package:solana/src/rpc_client/account.dart';
 import 'package:solana/src/rpc_client/commitment.dart';
 import 'package:solana/src/rpc_client/rpc_client.dart';
@@ -76,6 +77,7 @@ class SplToken {
   }
 
   /// Transfer [amount] tokens owned by [owner] from [source] to [destination]
+  /// Transfer [amount] tokens owned by [owner] from [source] to [destination]
   Future<TransactionSignature> transfer({
     required String source,
     required String destination,
@@ -83,25 +85,37 @@ class SplToken {
     required Ed25519HDKeyPair owner,
     Commitment commitment = TxStatus.finalized,
   }) async {
-    final associatedRecipientAccount = await getAssociatedAccount(destination);
-    final associatedSenderAccount = await getAssociatedAccount(source);
-    // Throw an appropriate exception if the sender has no associated
-    // token account
-    if (associatedSenderAccount == null) {
-      throw NoAssociatedTokenAccountException(source, mint);
-    }
-    // Also throw an adequate exception if the recipient has no associated
-    // token account
-    if (associatedRecipientAccount == null) {
-      throw NoAssociatedTokenAccountException(destination, mint);
+    Message message;
+    Account? accountDestination;
+    try {
+      accountDestination = await _rpcClient.getAccountInfo(destination);
+    } catch (e) {
+      print("no info");
     }
 
-    final message = TokenProgram.transfer(
-      source: associatedSenderAccount.address,
-      destination: associatedRecipientAccount.address,
-      owner: owner.address,
-      amount: amount,
-    );
+    if (accountDestination == null) {
+      final destinationSenderAccount = await getAssociatedAccount(destination);
+      // Throw an appropriate exception if the sender has no associated
+      // token account
+      if (destinationSenderAccount == null) {
+        throw NoAssociatedTokenAccountException(destination, mint);
+      }
+      message = TokenProgram.transfer(
+        source: source,
+        destination: destinationSenderAccount.address,
+        owner: owner.address,
+        amount: amount,
+      );
+    } else if (accountDestination.owner == TokenProgram.programId) {
+      message = TokenProgram.transfer(
+        source: source,
+        destination: destination,
+        owner: owner.address,
+        amount: amount,
+      );
+    } else {
+      throw NoTokenAccountException(destination, mint);
+    }
 
     final signature = await _rpcClient.signAndSendTransaction(
       message,
@@ -121,14 +135,8 @@ class SplToken {
     Commitment commitment = Commitment.finalized,
   }) async {
     final List<Instruction> instructions = <Instruction>[];
-    final AssociatedTokenAccount? associatedSenderAccount = await getAssociatedAccount(source);
     final AssociatedTokenAccount? associatedRecipientAccount = await getAssociatedAccount(destination);
 
-    // Throw an appropriate exception if the sender has no associated
-    // token account
-    if (associatedSenderAccount == null) {
-      throw NoAssociatedTokenAccountException(source, mint);
-    }
     // Also throw an adequate exception if the recipient has no associated
     // token account
     String? associatedRecipientAccountAddres = associatedRecipientAccount?.address;
@@ -151,7 +159,7 @@ class SplToken {
     }
 
     final transferMessage = TokenProgram.transfer(
-      source: associatedSenderAccount.address,
+      source: source,
       destination: associatedRecipientAccountAddres,
       owner: payer.address,
       amount: amount,

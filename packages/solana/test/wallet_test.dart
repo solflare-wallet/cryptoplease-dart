@@ -118,6 +118,7 @@ void main() {
     );
     expect(
       source.transferSplToken(
+        source: source.address,
         destination: wallet.address,
         amount: 100,
         mint: token.mint,
@@ -136,6 +137,7 @@ void main() {
       funder: source,
     );
     final signature = await source.transferSplToken(
+      source: wallet.address,
       destination: wallet.address,
       amount: 40,
       mint: token.mint,
@@ -159,6 +161,7 @@ void main() {
     const memoText = 'Memo test string...';
 
     final signature = await source.transferSplTokenWithMemo(
+      source: source.address,
       mint: token.mint,
       destination: wallet.address,
       amount: 40,
