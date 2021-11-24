@@ -483,7 +483,7 @@ class _$ParsedInstructionSplToken implements ParsedInstructionSplToken {
 
 abstract class ParsedInstructionSplToken implements ParsedInstruction {
   const factory ParsedInstructionSplToken(
-          {required ParsedSplTokenInstruction parsed}) =
+          {ParsedSplTokenInstruction parsed}) =
       _$ParsedInstructionSplToken;
 
   factory ParsedInstructionSplToken.fromJson(Map<String, dynamic> json) =
