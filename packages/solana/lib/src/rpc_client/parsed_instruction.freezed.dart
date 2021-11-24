@@ -483,7 +483,7 @@ class _$ParsedInstructionSplToken implements ParsedInstructionSplToken {
 
 abstract class ParsedInstructionSplToken implements ParsedInstruction {
   const factory ParsedInstructionSplToken(
-          {ParsedSplTokenInstruction parsed}) =
+          {required ParsedSplTokenInstruction parsed}) =
       _$ParsedInstructionSplToken;
 
   factory ParsedInstructionSplToken.fromJson(Map<String, dynamic> json) =
@@ -706,7 +706,7 @@ class _$ParsedInstructionUnsupported implements ParsedInstructionUnsupported {
       _$$ParsedInstructionUnsupportedFromJson(json);
 
   @override
-  final String program;
+  final String? program;
 
   @override
   String toString() {
@@ -814,7 +814,7 @@ class _$ParsedInstructionUnsupported implements ParsedInstructionUnsupported {
 }
 
 abstract class ParsedInstructionUnsupported implements ParsedInstruction {
-  const factory ParsedInstructionUnsupported({required String program}) =
+  const factory ParsedInstructionUnsupported({required String? program}) =
       _$ParsedInstructionUnsupported;
 
   factory ParsedInstructionUnsupported.fromJson(Map<String, dynamic> json) =
