@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 
-import 'package:borsh_annotation/src/type.dart';
+import 'type.dart';
+
 
 class Struct {
   const Struct({
