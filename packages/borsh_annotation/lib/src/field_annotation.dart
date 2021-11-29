@@ -1,4 +1,4 @@
-import 'package:borsh_annotation/src/type.dart';
+import 'type.dart';
 
 /// Annotate an `Iterable` class member as a borsh serializable array.
 class Array {
