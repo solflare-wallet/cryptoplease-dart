@@ -93,7 +93,7 @@ class SplToken {
       print("no info");
     }
 
-    if (accountDestination == null) {
+    if (accountDestination == null || accountDestination.owner == SystemProgram.programId) {
       final destinationSenderAccount = await getAssociatedAccount(destination);
       // Throw an appropriate exception if the sender has no associated
       // token account
