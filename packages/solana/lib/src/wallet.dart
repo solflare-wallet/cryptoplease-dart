@@ -216,6 +216,21 @@ class Wallet {
     return associatedTokenAccount;
   }
 
+  Future<String> createAssociatedAccountWithSignature({
+    required String mint,
+    Commitment? commitment,
+    String? otherAddress,
+    Wallet? funder,
+  }) async {
+    final token = await SplToken.readonly(mint: mint, rpcClient: _rpcClient);
+    final associatedTokenAccount = await token.createAssociatedAccountWithSignature(
+      owner: otherAddress ?? address,
+      funder: funder?.signer ?? signer,
+    );
+
+    return associatedTokenAccount;
+  }
+
   /// Whether this wallet has an associated token account for the SPL token [mint].
   Future<bool> hasAssociatedTokenAccount({
     required String mint,
