@@ -89,8 +89,9 @@ class SplToken {
     Account? accountDestination;
     try {
       accountDestination = await _rpcClient.getAccountInfo(destination);
+      // ignore: avoid_catches_without_on_clauses
     } catch (e) {
-      print("no info");
+      print('no info');
     }
 
     if (accountDestination == null || accountDestination.owner == SystemProgram.programId) {
@@ -254,6 +255,30 @@ class SplToken {
         rentEpoch: 0,
       ),
     );
+  }
+
+  /// Create the associated account for [owner] funded by [funder].
+  Future<String> createAssociatedAccountWithSignature({
+    required String owner,
+    required Ed25519HDKeyPair funder,
+    Commitment commitment = Commitment.finalized,
+  }) async {
+    final derivedAddress = await computeAssociatedAddress(
+      owner: owner,
+    );
+    final message = AssociatedTokenAccountProgram(
+      mint: mint,
+      address: derivedAddress,
+      owner: owner,
+      funder: funder.address,
+    );
+    final signature = await _rpcClient.signAndSendTransaction(
+      message,
+      [
+        funder,
+      ],
+    );
+    return signature;
   }
 
   /// Mint [destination] with [amount] tokens. Requires writable [Token].
