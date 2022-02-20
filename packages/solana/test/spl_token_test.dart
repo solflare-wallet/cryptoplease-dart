@@ -1,8 +1,5 @@
 import 'package:solana/solana.dart';
-import 'package:solana/src/crypto/ed25519_hd_keypair.dart';
-import 'package:solana/src/exceptions/no_associated_token_account_exception.dart';
-import 'package:solana/src/spl_token/associated_account.dart';
-import 'package:solana/src/spl_token/spl_token.dart';
+import 'package:solana/src/signer/signer_hot_wallet.dart';
 import 'package:solana/src/spl_token/token_supply.dart';
 import 'package:test/test.dart';
 
@@ -13,11 +10,11 @@ void main() {
   group('Test spl tokens', () {
     final RPCClient client = RPCClient(devnetRpcUrl);
     late final String newTokenMint;
-    late final Ed25519HDKeyPair owner;
+    late final SignerHotWallet owner;
 
     setUpAll(() async {
-      owner = await Ed25519HDKeyPair.random();
-      await airdrop(client, owner, sol: 100);
+      owner = SignerHotWallet(keyPair: await Ed25519HDKeyPair.random());
+      await airdrop(client, owner.address, sol: 100);
     });
 
     test('Create a new mint', () async {
@@ -33,9 +30,9 @@ void main() {
     });
 
     test('Create an account with', () async {
-      final creator = await Ed25519HDKeyPair.random();
-      final account = await Ed25519HDKeyPair.random();
-      await airdrop(client, creator, sol: 100);
+      final creator = SignerHotWallet(keyPair: await Ed25519HDKeyPair.random());
+      final account = SignerHotWallet(keyPair: await Ed25519HDKeyPair.random());
+      await airdrop(client, creator.address, sol: 100);
       final token = await SplToken.readonly(
         mint: newTokenMint,
         rpcClient: client,
@@ -142,9 +139,9 @@ void main() {
         mint: newTokenMint,
         rpcClient: client,
       );
-      final feePayer = await Ed25519HDKeyPair.random();
+      final feePayer = SignerHotWallet(keyPair: await Ed25519HDKeyPair.random());
       // Add some tokens to pay for fees
-      await airdrop(client, feePayer, sol: 10);
+      await airdrop(client, feePayer.address, sol: 10);
 
       // The account does not exist, so create it
       final account = await token.createAssociatedAccount(
@@ -225,7 +222,7 @@ void main() {
     });
 
     test('Send transfer instruction in an existing transaction', () async {
-      final destination = await Ed25519HDKeyPair.random();
+      final destination = SignerHotWallet(keyPair: await Ed25519HDKeyPair.random());
       final token =
           await SplToken.readonly(mint: newTokenMint, rpcClient: client);
       final associatedSourceAddress =

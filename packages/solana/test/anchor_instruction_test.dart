@@ -2,9 +2,8 @@ import 'dart:io';
 
 import 'package:solana/solana.dart';
 import 'package:solana/src/anchor/instruction.dart';
-import 'package:solana/src/crypto/ed25519_hd_keypair.dart';
 import 'package:solana/src/encoder/constants.dart';
-import 'package:solana/src/encoder/message.dart';
+import 'package:solana/src/signer/signer_hot_wallet.dart';
 import 'package:test/test.dart';
 
 import 'airdrop.dart';
@@ -12,15 +11,15 @@ import 'anchor_tutorial_types/basic1.dart';
 import 'config.dart';
 
 void main() {
-  late final Ed25519HDKeyPair payer;
-  late final Ed25519HDKeyPair updater;
+  late final SignerHotWallet payer;
+  late final SignerHotWallet updater;
   final client = RPCClient(devnetRpcUrl);
 
   setUpAll(() async {
-    payer = await Ed25519HDKeyPair.random();
-    updater = await Ed25519HDKeyPair.random();
+    payer = SignerHotWallet(keyPair: await Ed25519HDKeyPair.random());
+    updater = SignerHotWallet(keyPair: await Ed25519HDKeyPair.random());
 
-    await airdrop(client, payer, sol: 10);
+    await airdrop(client, payer.address, sol: 10);
   });
 
   test('Call basic-0 initialize method', () async {

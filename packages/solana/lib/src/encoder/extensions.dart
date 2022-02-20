@@ -1,7 +1,5 @@
 import 'package:solana/solana.dart';
-import 'package:solana/src/encoder/account_meta.dart';
-import 'package:solana/src/encoder/buffer.dart';
-import 'package:solana/src/encoder/instruction.dart';
+import 'package:solana/src/signer/signer_base.dart';
 
 extension AccountMetaListExt on List<AccountMeta> {
   // Convert account metas to encoder public keys
@@ -70,7 +68,7 @@ extension InstructionListExt on List<Instruction> {
   ///
   /// [1]: https://docs.solana.com/developing/programming-model/transactions#account-addresses-format
   List<AccountMeta> getAccountsWithOptionalFeePayer(
-    Ed25519HDKeyPair feePayer,
+      Signer feePayer,
   ) {
     final accounts = expand<AccountMeta>(
       (Instruction instruction) => [

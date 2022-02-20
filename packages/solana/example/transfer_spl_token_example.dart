@@ -1,11 +1,12 @@
 import 'package:solana/solana.dart';
+import 'package:solana/src/signer/signer_hot_wallet.dart';
 
 Future<void> example() async {
   final rpcClient = RPCClient(_rpcClientUrl);
 
   // Create a wallet
   final source = Wallet(
-    signer: await Ed25519HDKeyPair.random(),
+    signer: SignerHotWallet(keyPair: await Ed25519HDKeyPair.random()),
     rpcClient: rpcClient,
   );
 
@@ -15,7 +16,7 @@ Future<void> example() async {
 
   // Final Destination (so funny :D)
   final destination = Wallet(
-    signer: await Ed25519HDKeyPair.random(),
+    signer: SignerHotWallet(keyPair: await Ed25519HDKeyPair.random()),
     rpcClient: rpcClient,
   );
 
@@ -30,7 +31,7 @@ Future<void> example() async {
 
   // Create a wallet to pay for fees
   final feePayer = Wallet(
-    signer: await Ed25519HDKeyPair.random(),
+    signer: SignerHotWallet(keyPair: await Ed25519HDKeyPair.random()),
     rpcClient: rpcClient,
   );
   // Add some tokens to pay for fees

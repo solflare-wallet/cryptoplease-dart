@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:solana/src/crypto/ed25519_hd_keypair.dart';
 import 'package:solana/src/dto/account.dart';
 import 'package:solana/src/dto/blockhash.dart';
 import 'package:solana/src/dto/commitment.dart';
@@ -18,6 +17,7 @@ import 'package:solana/src/rpc_client/minimum_balance_for_rent_exemption_respons
 import 'package:solana/src/rpc_client/simulate_tx_result.dart';
 import 'package:solana/src/rpc_client/transaction_response.dart';
 import 'package:solana/src/rpc_client/transaction_signature.dart';
+import 'package:solana/src/signer/signer_base.dart';
 import 'package:solana/src/spl_token/associated_account.dart';
 import 'package:solana/src/spl_token/token_amount.dart';
 import 'package:solana/src/spl_token/token_supply.dart';

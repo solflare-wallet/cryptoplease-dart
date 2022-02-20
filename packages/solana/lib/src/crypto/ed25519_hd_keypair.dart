@@ -1,14 +1,11 @@
 import 'dart:math';
 
 import 'package:bip39/bip39.dart' as bip39;
-import 'package:cryptography/cryptography.dart'
-    show Ed25519, KeyPair, KeyPairType, SimpleKeyPairData, SimplePublicKey;
+import 'package:cryptography/cryptography.dart' show Ed25519, KeyPair, KeyPairType, SimpleKeyPairData, SimplePublicKey;
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:solana/solana.dart';
-import 'package:solana/src/base58/encode.dart';
-import 'package:solana/src/encoder/message.dart';
 import 'package:solana/src/encoder/signature.dart';
-import 'package:solana/src/encoder/signed_tx.dart';
+import 'package:solana/src/signer/signer_hot_wallet.dart';
 
 /// Signs solana transactions using the ed25519 elliptic curve
 class Ed25519HDKeyPair extends KeyPair {
@@ -89,9 +86,10 @@ class Ed25519HDKeyPair extends KeyPair {
     // FIXME: should be string (no knowledge of these structures is needed here)
     required String recentBlockhash,
   }) async {
+    final signer = SignerHotWallet(keyPair: this);
     final compiledMessage = message.compile(
       recentBlockhash: recentBlockhash,
-      feePayer: this,
+      feePayer: signer,
     );
     final signature = await sign(compiledMessage.data);
 
@@ -121,11 +119,11 @@ class Ed25519HDKeyPair extends KeyPair {
       );
 
   /// Build a derivation path with [account] and [change]
-  static String _getHDPath(int account, int change) =>
-      "m/44'/501'/$account'/$change'";
+  static String _getHDPath(int account, int change) => "m/44'/501'/$account'/$change'";
 
   /// The address or public key of this wallet
   static final _ed25519 = Ed25519();
+  static Ed25519 getEd25519() => _ed25519;
 
   final List<int> _privateKey;
   final List<int> _publicKey;

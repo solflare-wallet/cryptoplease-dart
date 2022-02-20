@@ -1,15 +1,9 @@
 import 'package:bip39/bip39.dart';
 import 'package:solana/solana.dart';
-import 'package:solana/src/crypto/ed25519_hd_keypair.dart';
-import 'package:solana/src/dto/account.dart';
 import 'package:solana/src/dto/account_data.dart';
-import 'package:solana/src/dto/blockhash.dart';
-import 'package:solana/src/dto/commitment.dart';
-import 'package:solana/src/rpc_client/rpc_client.dart';
 import 'package:solana/src/rpc_client/simulate_tx_result.dart';
-import 'package:solana/src/rpc_client/transaction_response.dart';
 import 'package:solana/src/rpc_client/transaction_signature.dart';
-import 'package:solana/src/system_program/system_program.dart';
+import 'package:solana/src/signer/signer_hot_wallet.dart';
 import 'package:test/test.dart';
 
 import 'airdrop.dart';
@@ -20,18 +14,20 @@ const int _transferredAmount = 0x1000;
 void main() {
   group('SolanaClient testsuite', () {
     final RPCClient rpcClient = RPCClient(devnetRpcUrl);
-    late Ed25519HDKeyPair destination;
-    late Ed25519HDKeyPair source;
+    late SignerHotWallet destination;
+    late SignerHotWallet source;
     int currentBalance = 0;
 
     setUpAll(() async {
-      destination = await Ed25519HDKeyPair.fromMnemonic(
+      final destinationKeyPair = await Ed25519HDKeyPair.fromMnemonic(
         generateMnemonic(),
       ); // generateMnemonic());
-      source = await Ed25519HDKeyPair.fromMnemonic(
+      destination = SignerHotWallet(keyPair: destinationKeyPair);
+      final sourceKeyPair = await Ed25519HDKeyPair.fromMnemonic(
         generateMnemonic(),
         account: 1,
       );
+      source = SignerHotWallet(keyPair: sourceKeyPair);
     });
 
     test('Call requestAirdrop and add SOL to an account works', () async {
@@ -157,10 +153,10 @@ void main() {
 
   group('Test commitment', () {
     final RPCClient solanaClient = RPCClient(devnetRpcUrl);
-    late Ed25519HDKeyPair wallet;
+    late SignerHotWallet wallet;
 
     setUp(() async {
-      wallet = await Ed25519HDKeyPair.fromMnemonic(generateMnemonic());
+      wallet = SignerHotWallet(keyPair: await Ed25519HDKeyPair.fromMnemonic(generateMnemonic()));
     });
 
     test('Balance is not updated until tx is finalized', () async {
@@ -208,11 +204,11 @@ void main() {
     });
 
     test('Get token accounts by owner', () async {
-      final accountKeyPair = await Ed25519HDKeyPair.random();
-      final accountCreator = await Ed25519HDKeyPair.random();
+      final accountKeyPair = SignerHotWallet(keyPair: await Ed25519HDKeyPair.random());
+      final accountCreator = SignerHotWallet(keyPair: await Ed25519HDKeyPair.random());
 
-      await airdrop(solanaClient, wallet, sol: 100);
-      await airdrop(solanaClient, accountCreator, sol: 100);
+      await airdrop(solanaClient, wallet.address, sol: 100);
+      await airdrop(solanaClient, accountCreator.address, sol: 100);
 
       final token = await solanaClient.initializeMint(
         owner: wallet,

@@ -1,17 +1,8 @@
 import 'package:solana/solana.dart';
-import 'package:solana/src/associated_token_account_program/associated_token_account_program.dart';
-import 'package:solana/src/crypto/ed25519_hd_keypair.dart';
-import 'package:solana/src/dto/account.dart';
-import 'package:solana/src/dto/commitment.dart';
-import 'package:solana/src/dto/signature_status.dart';
-import 'package:solana/src/encoder/buffer.dart';
-import 'package:solana/src/exceptions/no_associated_token_account_exception.dart';
 import 'package:solana/src/exceptions/not_token_exception.dart';
-import 'package:solana/src/rpc_client/rpc_client.dart';
 import 'package:solana/src/rpc_client/transaction_signature.dart';
-import 'package:solana/src/spl_token/associated_account.dart';
-import 'package:solana/src/token_program/token_program.dart';
-import 'package:solana/src/utils.dart';
+import 'package:solana/src/signer/signer_base.dart';
+import 'package:solana/src/signer/signer_hot_wallet.dart';
 
 /// Represents a SPL token program
 class SplToken {
@@ -27,7 +18,7 @@ class SplToken {
   static Future<SplToken> _withOptionalOwner({
     required String mint,
     required RPCClient rpcClient,
-    Ed25519HDKeyPair? owner,
+    Signer? owner,
   }) async {
     // TODO(IA): perhaps delay this or use a user provided token information
     final supplyResponse = await rpcClient.getTokenSupply(mint);
@@ -45,7 +36,7 @@ class SplToken {
   static Future<SplToken> readWrite({
     required String mint,
     required RPCClient rpcClient,
-    required Ed25519HDKeyPair owner,
+    required Signer owner,
   }) =>
       SplToken._withOptionalOwner(
         mint: mint,
@@ -82,7 +73,7 @@ class SplToken {
     required String source,
     required String destination,
     required int amount,
-    required Ed25519HDKeyPair owner,
+    required Signer owner,
     Commitment commitment = TxStatus.finalized,
   }) async {
     Message message;
@@ -132,7 +123,7 @@ class SplToken {
     required String source,
     required String destination,
     required int amount,
-    required Ed25519HDKeyPair payer,
+    required Signer payer,
     Commitment commitment = Commitment.finalized,
   }) async {
     final List<Instruction> instructions = <Instruction>[];
@@ -140,7 +131,7 @@ class SplToken {
 
     // Also throw an adequate exception if the recipient has no associated
     // token account
-    String? associatedRecipientAccountAddres = associatedRecipientAccount?.address;
+    String? associatedRecipientAccountAddress = associatedRecipientAccount?.address;
     if (associatedRecipientAccount == null) {
       final derivedAddress = await computeAssociatedAddress(
         owner: destination,
@@ -151,17 +142,17 @@ class SplToken {
         owner: destination,
         funder: payer.address,
       );
-      associatedRecipientAccountAddres = derivedAddress;
+      associatedRecipientAccountAddress = derivedAddress;
       instructions.addAll(associatedTokenAccountProgramMessage.instructions);
     }
 
-    if (associatedRecipientAccountAddres == null) {
+    if (associatedRecipientAccountAddress == null) {
       throw NoAssociatedTokenAccountException(destination, mint);
     }
 
     final transferMessage = TokenProgram.transfer(
       source: source,
-      destination: associatedRecipientAccountAddres,
+      destination: associatedRecipientAccountAddress,
       owner: payer.address,
       amount: amount,
     );
@@ -178,8 +169,8 @@ class SplToken {
 
   /// Create an account for [account]
   Future<Account> createAccount({
-    required Ed25519HDKeyPair account,
-    required Ed25519HDKeyPair creator,
+    required Signer account,
+    required Signer creator,
     Commitment commitment = Commitment.finalized,
   }) async {
     const space = TokenProgram.neededAccountSpace;
@@ -225,7 +216,7 @@ class SplToken {
   /// Create the associated account for [owner] funded by [funder].
   Future<AssociatedTokenAccount> createAssociatedAccount({
     required String owner,
-    required Ed25519HDKeyPair funder,
+    required Signer funder,
     Commitment commitment = Commitment.finalized,
   }) async {
     final derivedAddress = await computeAssociatedAddress(
@@ -260,7 +251,7 @@ class SplToken {
   /// Create the associated account for [owner] funded by [funder].
   Future<String> createAssociatedAccountWithSignature({
     required String owner,
-    required Ed25519HDKeyPair funder,
+    required Signer funder,
     Commitment commitment = Commitment.finalized,
   }) async {
     final derivedAddress = await computeAssociatedAddress(
@@ -307,7 +298,7 @@ class SplToken {
   final int decimals;
   final BigInt supply;
   final String mint;
-  final Ed25519HDKeyPair? owner;
+  final Signer? owner;
   final RPCClient _rpcClient;
 }
 
@@ -322,14 +313,14 @@ extension TokenExt on RPCClient {
   ///
   /// Finally, you can also send the transaction with optional [commitment].
   Future<SplToken> initializeMint({
-    required Ed25519HDKeyPair owner,
+    required Signer owner,
     required int decimals,
     String? mintAuthority,
     String? freezeAuthority,
     Commitment commitment = Commitment.finalized,
   }) async {
     const space = TokenProgram.neededMintAccountSpace;
-    final mintWallet = await Ed25519HDKeyPair.random();
+    final mintWallet = SignerHotWallet(keyPair: await Ed25519HDKeyPair.random());
     final rent = await getMinimumBalanceForRentExemption(space);
 
     final message = TokenProgram.initializeMint(
@@ -340,6 +331,7 @@ extension TokenExt on RPCClient {
       space: space,
       decimals: decimals,
     );
+
     final signature = await signAndSendTransaction(
       message,
       [

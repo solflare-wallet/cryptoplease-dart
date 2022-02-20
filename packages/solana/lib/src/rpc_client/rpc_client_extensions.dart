@@ -15,7 +15,7 @@ extension Convenience on RPCClient {
   /// [see this document]: https://docs.solana.com/developing/clients/jsonrpc-api#configuring-state-commitment
   Future<TransactionSignature> signAndSendTransaction(
     Message message,
-    List<Ed25519HDKeyPair> signers,
+    List<Signer> signers,
   ) async {
     final recentBlockhash = await getRecentBlockhash();
     final signedTx = await signTransaction(recentBlockhash, message, signers);
@@ -66,7 +66,7 @@ extension Convenience on RPCClient {
     }
 
     clock.start();
-    // ignore: unawaited_futures
+    // ignore: un awaited_futures
     check();
 
     return completer.future;
