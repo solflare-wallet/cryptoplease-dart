@@ -5,7 +5,6 @@ import 'package:cryptography/cryptography.dart' show Ed25519, KeyPair, KeyPairTy
 import 'package:ed25519_hd_key/ed25519_hd_key.dart';
 import 'package:solana/solana.dart';
 import 'package:solana/src/encoder/signature.dart';
-import 'package:solana/src/signer/signer_hot_wallet.dart';
 
 /// Signs solana transactions using the ed25519 elliptic curve
 class Ed25519HDKeyPair extends KeyPair {
@@ -77,25 +76,6 @@ class Ed25519HDKeyPair extends KeyPair {
     return Ed25519HDKeyPair.fromSeedWithHdPath(
       seed: seed,
       hdPath: _getHDPath(account, change),
-    );
-  }
-
-  /// Sign a solana program message
-  Future<SignedTx> signMessage({
-    required Message message,
-    // FIXME: should be string (no knowledge of these structures is needed here)
-    required String recentBlockhash,
-  }) async {
-    final signer = SignerHotWallet(keyPair: this);
-    final compiledMessage = message.compile(
-      recentBlockhash: recentBlockhash,
-      feePayer: signer,
-    );
-    final signature = await sign(compiledMessage.data);
-
-    return SignedTx(
-      signatures: [signature],
-      messageBytes: compiledMessage.data,
     );
   }
 
