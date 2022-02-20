@@ -37,8 +37,5 @@ class SignerHotWallet extends Signer {
   }
 
   @override
-  Future<solana_signature.Signature> sign(Iterable<int> data) async {
-    final cryptoSignature = await Ed25519HDKeyPair.getEd25519().sign(data.toList(growable: false), keyPair: _keyPair);
-    return solana_signature.Signature.from(cryptoSignature);
-  }
+  Future<solana_signature.Signature> sign(Iterable<int> data) async => _keyPair.sign(data);
 }
