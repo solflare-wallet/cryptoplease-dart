@@ -8,7 +8,7 @@ import 'package:solana/src/encoder/signed_tx.dart';
 import 'package:solana/src/signer/signer_base.dart';
 
 typedef ColdAsyncMessageSign = Future<SignedTx> Function({required Message message, required String recentBlockhash});
-typedef ColdAsyncSign = Future<Signature> Function({Iterable<int> data});
+typedef ColdAsyncSign = Future<Signature> Function({required Iterable<int> data});
 
 abstract class ColdWalletSignatureProvider {
   ColdAsyncMessageSign signMessage;
